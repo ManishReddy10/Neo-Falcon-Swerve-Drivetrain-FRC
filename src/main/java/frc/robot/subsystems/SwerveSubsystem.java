@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.sensors.Pigeon2;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,8 +19,11 @@ public class SwerveSubsystem extends SubsystemBase {
     public SwerveDriveOdometry swerveDriveOdometry;
     public SwerveModule[] swerveModules;
     public AHRS navX;
+    public Pigeon2 pigeon;
 
     public SwerveSubsystem(){
+        pigeon = new Pigeon2(13, "rio");
+        pigeon.reset();
         navX = new AHRS(SerialPort.Port.kUSB1);
         navX.reset();
 
@@ -103,6 +107,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public void zeroGyro(){
         navX.reset();
+        pigeon.reset();
     }
 
     public Rotation2d getYaw() {
