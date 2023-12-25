@@ -25,19 +25,19 @@ public class SwerveSubsystem extends SubsystemBase {
 
         swerveModules = new SwerveModule[]{
                 new SwerveModule(
-                        0, SwerveTypeConstants.SDSMK4I_L2(),
+                        0, SwerveTypeConstants.SDSMK4_L2(),
                         SWERVE_LEFTFRONT_DRIVEMOTOR,SWERVE_LEFTFRONT_ANGLEMOTOR,SWERVE_LEFTFRONT_CANCODER,
                         SWERVE_LEFTFRONT_OFFSET),
                 new SwerveModule(
-                        1, SwerveTypeConstants.SDSMK4I_L2(),
+                        1, SwerveTypeConstants.SDSMK4_L2(),
                         SWERVE_LEFTREAR_DRIVEMOTOR,SWERVE_LEFTREAR_ANGLEMOTOR,SWERVE_LEFTREAR_CANCODER,
                         SWERVE_LEFTREAR_OFFSET),
                 new SwerveModule(
-                        2, SwerveTypeConstants.SDSMK4I_L2(),
+                        2, SwerveTypeConstants.SDSMK4_L2(),
                         SWERVE_RIGHTFRONT_DRIVEMOTOR,SWERVE_RIGHTFRONT_ANGLEMOTOR,SWERVE_RIGHTFRONT_CANCODER,
                         SWERVE_RIGHTFRONT_OFFSET),
                 new SwerveModule(
-                        3, SwerveTypeConstants.SDSMK4I_L2(),
+                        3, SwerveTypeConstants.SDSMK4_L2(),
                         SWERVE_RIGHTREAR_DRIVEMOTOR,SWERVE_RIGHTREAR_ANGLEMOTOR,SWERVE_RIGHTREAR_CANCODER,
                         SWERVE_RIGHTREAR_OFFSET)
         };
