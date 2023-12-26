@@ -23,7 +23,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public SwerveSubsystem(){
         pigeon = new Pigeon2(13, "rio");
-        pigeon.reset();
+        pigeon.setYaw(0);
         navX = new AHRS(SerialPort.Port.kUSB1);
         navX.reset();
 
@@ -107,11 +107,13 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public void zeroGyro(){
         navX.reset();
-        pigeon.reset();
+        pigeon.setYaw(0);
     }
 
     public Rotation2d getYaw() {
-        return (NAVX_INVERTED) ? Rotation2d.fromDegrees(360 - navX.getYaw()) : Rotation2d.fromDegrees(navX.getYaw());
+        // return (NAVX_INVERTED) ? Rotation2d.fromDegrees(360 - navX.getYaw()) : Rotation2d.fromDegrees(navX.getYaw());
+        return (NAVX_INVERTED) ? Rotation2d.fromDegrees(360 - pigeon.getYaw()) : Rotation2d.fromDegrees(pigeon.getYaw());
+
     }
 
     public void resetModulesToAbsolute(){
