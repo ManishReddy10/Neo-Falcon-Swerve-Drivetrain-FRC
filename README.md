@@ -8,3 +8,4 @@ Swerve drivetrain with
 -  Chassey Dimensions ❌ (Trackwidth meters and Wheelbase meters variables)
 -  Calculate Each Modules Angle Offset ❌
 -  Path Planning ❌
+-  Simulation ❌
