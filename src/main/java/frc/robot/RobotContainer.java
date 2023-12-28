@@ -5,20 +5,34 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.PathConstraints;
-import com.pathplanner.lib.PathPlanner;
-import com.pathplanner.lib.PathPlannerTrajectory;
-import com.pathplanner.lib.auto.PIDConstants;
-import com.pathplanner.lib.auto.SwerveAutoBuilder;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryUtil;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.commands.SwerveDriveCommand;
 import frc.robot.subsystems.SwerveSubsystem;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 
@@ -32,7 +46,7 @@ public class RobotContainer
 
     private final static XboxController controller_driveX = new XboxController(0);
     //    private final static Joystick controller_driveF = new Joystick(0);
-    private final SendableChooser<String> pathChooser = new SendableChooser<>();
+    private final SendableChooser<Command> autoChooser;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer()
@@ -46,44 +60,50 @@ public class RobotContainer
                 () -> controller_driveX.getBackButton()
         ));
         // Configure the trigger bindings
+
+        NamedCommands.registerCommand("marker1", Commands.print("Passed marker 1"));
+        NamedCommands.registerCommand("marker2", Commands.print("Passed marker 2"));
+        NamedCommands.registerCommand("print hello", Commands.print("hello"));
+    
         configureBindings();
 
-        pathChooser.setDefaultOption("Auto 1", "AUTO_1");
-        pathChooser.addOption("Auto 2", "AUTO_2");
-        pathChooser.addOption("Auto 3", "AUTO_3");
-        SmartDashboard.putData("Auto choices", pathChooser);
+        autoChooser = AutoBuilder.buildAutoChooser(); // Default auto will be `Commands.none()`
+        SmartDashboard.putData("Auto Mode", autoChooser);
+        // Shuffleboard.getTab("Auton Routine").add(autoChooser);
+    
+
     }
+
+    
 
 
     private void configureBindings()
     {
         new JoystickButton(controller_driveX,XboxController.Button.kRightBumper.value)
                 .whenPressed(new InstantCommand(swerveSubsystem::zeroGyro));
+
+                SmartDashboard.putData("On-the-fly path", Commands.runOnce(() -> {
+                    Pose2d currentPose = swerveSubsystem.getPose();
+                    
+                    // The rotation component in these poses represents the direction of travel
+                    Pose2d startPos = new Pose2d(currentPose.getTranslation(), new Rotation2d());
+                    Pose2d endPos = new Pose2d(currentPose.getTranslation().plus(new Translation2d(2.0, 0.0)), new Rotation2d());
+              
+                    List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(startPos, endPos);
+                    PathPlannerPath path = new PathPlannerPath(
+                      bezierPoints, 
+                      new PathConstraints(
+                        4.0, 4.0, 
+                        Units.degreesToRadians(360), Units.degreesToRadians(540)
+                      ),  
+                      new GoalEndState(0.0, currentPose.getRotation())
+                    );
+              
+                    AutoBuilder.followPathWithEvents(path).schedule();
+                  }));
     }
 
     public Command getAutonomousCommand() {
-        if(pathChooser.getSelected()=="DONT_MOVE"){return null;}
-
-        List<PathPlannerTrajectory> pathGroup =
-                PathPlanner.loadPathGroup(pathChooser.getSelected(), new PathConstraints(4, 3));
-        // This is just an example event map. It would be better to have a constant, global event map
-        // in your code that will be used by all path following commands
-        HashMap<String, Command> eventMap = new HashMap<>();
-
-        // Create the AutoBuilder. This only needs to be created once when robot code starts, not every time you want to create an auto command. A good place to put this is in RobotContainer along with your subsystems.
-        SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(
-                swerveSubsystem::getPose, // Pose2d supplier
-                swerveSubsystem::resetOdometry, // Pose2d consumer, used to reset odometry at the beginning of auto
-                swerveDriveKinematics, // SwerveDriveKinematics
-                new PIDConstants(SWERVE_AUTO_XY_KP, SWERVE_AUTO_XY_KI, SWERVE_AUTO_XY_KD), // PID constants to correct for translation error (used to create the X and Y PID controllers)
-                new PIDConstants(SWERVE_AUTO_Z_KP, SWERVE_AUTO_Z_KI, SWERVE_AUTO_Z_KD), // PID constants to correct for rotation error (used to create the rotation controller)
-                swerveSubsystem::setModuleStates, // Module states consumer used to output to the drive subsystem
-                eventMap,
-                false, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
-                swerveSubsystem // The drive subsystem. Used to properly set the requirements of path following commands
-        );
-        final Command fullAuto = autoBuilder.fullAuto(pathGroup);
-
-        return fullAuto;
+        return autoChooser.getSelected();
     }
 }
