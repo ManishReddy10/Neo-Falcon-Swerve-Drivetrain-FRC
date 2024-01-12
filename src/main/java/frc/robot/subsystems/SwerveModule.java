@@ -78,7 +78,7 @@ public class SwerveModule {
         lastAngle = angle;
     }
 
-    private Rotation2d getAngle(){
+    public Rotation2d getAngle(){
         return Rotation2d.fromDegrees(angleMotorEncoder.getPosition());
     }
 

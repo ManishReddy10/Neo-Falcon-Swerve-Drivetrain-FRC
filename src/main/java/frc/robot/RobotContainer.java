@@ -40,7 +40,7 @@ public class RobotContainer
         swerveSubsystem.setDefaultCommand(new SwerveDriveCommand(
                 swerveSubsystem,
                 () -> -controller_driveX.getRawAxis(XboxController.Axis.kLeftY.value),
-                () -> -controller_driveX.getRawAxis(XboxController.Axis.kLeftX.value),
+                () -> -controller_driveX.getRawAxis(-XboxController.Axis.kLeftX.value),
                 () -> -controller_driveX.getRawAxis(XboxController.Axis.kRightX.value),
                 () -> controller_driveX.getPOV(),
                 () -> controller_driveX.getBackButton()
